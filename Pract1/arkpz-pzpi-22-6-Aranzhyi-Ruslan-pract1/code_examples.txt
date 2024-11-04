@@ -1,0 +1,124 @@
+# Гарний приклад - використання 4 пробілів для відступів
+def xor(a: bytes, b: bytes) -> bytes:
+    return int.to_bytes(
+        int.from_bytes(a, "big") ^ int.from_bytes(b, "big"),
+        len(a),
+        "big",
+    )
+
+
+# Поганий приклад - використання 4 пробілів і табів для відступів
+def xor(a: bytes, b: bytes) -> bytes:
+	return int.to_bytes(
+    	int.from_bytes(a, "big") ^ int.from_bytes(b, "big"),
+        len(a),
+        "big",
+    )
+
+
+# Гарний приклад
+class BitFlags:
+    __slots__ = ("cls", "value", "parsed",)
+    def __init__(self, value: int, cls: type) -> None:
+        self.cls = cls
+        self.value = value
+        self.parsed = self.parse_flags()
+    def parse_flags(self) -> None:
+        parsed = []
+        old_value = self.value
+        self.value = 0
+        for val in self.cls.values.items():
+            if (old_value & val) == val:
+                parsed.append(val)
+                self.flags |= val
+        return parsed
+
+
+# Поганий приклад
+class bitflags:
+    __slots__ = ("cls", "Value", "parsed",)
+    def __init__(self, Value: int, cls: type) -> None:
+        self.cls = cls
+        self.Value = Value
+        self.parsed = self.ParseFlags()
+    def ParseFlags(self) -> None:
+        PARSED = []
+        oldValue = self.Value
+        self.Value = 0
+        for val in self.cls.values.items():
+            if (oldValue & val) == val:
+                PARSED.append(val)
+                self.flags |= val
+        return PARSED
+
+
+# Файл mtproto/packets/base.py
+from abc import ABC
+class BasePacket(ABC):
+    ...
+
+
+# Файл mtproto/packets/error.py
+from mtproto.packets.base import BasePacket
+class ErrorBacket(BasePacket):
+    def __init__(self, error_code: int) -> None:
+        self.error_code = abs(error_code)
+
+
+# До рефакторінгу
+class OrderProcessor:
+    def process_order(self, order: Order) -> None:
+        if not order.is_valid():
+            raise ValueError("Invalid order")
+        total = sum(item.price for item in order.items)
+        if order.is_eligible_for_discount():
+            total *= 0.9
+        self.finalize_payment(total)
+
+
+# Після рефакторінгу
+class OrderProcessor:
+    def process_order(self, order: Order) -> None:
+        self._validate_order(order)
+        total = self._calculate_total(order)
+        if order.is_eligible_for_discount():
+            total *= 0.9
+        self.finalize_payment(total)
+    def _validate_order(self, order: Order) -> None:
+        if not order.is_valid():
+            raise ValueError("Invalid order")
+    def _calculate_total(self, order: Order) -> int:
+        return sum(item.price for item in order.items)
+
+
+# ...
+
+
+# Гарний приклад - в except оброблюються тільки KeyError та ValueError
+try:
+    header, payload, signature = token.split(".")
+    header_dict = json.loads(JWT._b64decode(header))
+    assert_(header_dict["alg"] == "HS512")
+except (KeyError, ValueError) as e:
+    ...
+
+
+# Поганий приклад - не зрозуміло, які саме помилки оброблюються в в блоці except (вказан загальний тип - Exception)
+try:
+    header, payload, signature = token.split(".")
+    header_dict = json.loads(JWT._b64decode(header))
+    assert_(header_dict["alg"] == "HS512")
+except Exception as e:
+    ...
+
+
+# Поганий приклад - не зрозуміло, які саме помилки оброблюються в в блоці except (тип помилки взагалі не вказаний)
+try:
+    header, payload, signature = token.split(".")
+    header_dict = json.loads(JWT._b64decode(header))
+    assert_(header_dict["alg"] == "HS512")
+except:
+    ...
+
+
+# ...

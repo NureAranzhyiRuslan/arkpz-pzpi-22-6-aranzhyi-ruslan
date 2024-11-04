@@ -1,0 +1,145 @@
+МІНІСТЕРСТВО ОСВІТИ І НАУКИ УКРАЇНИ
+ХАРКІВСЬКИЙ НАЦІОНАЛЬНИЙ
+УНІВЕРСИТЕТ РАДІОЕЛЕКТРОНІКИ
+Практична робота №1
+з дисципліни
+«Аналіз та рефакторінг коду»
+
+Виконав:
+ст. гр. ПЗПІ-22-6
+Аранжий Р.В.
+
+Перевіряли:
+Сокорчук І. П.
+
+Харків 2024
+
+1.1 Тема
+	Рекомендації написання коду для мови програмування Python
+
+1.2 Мета роботи
+	Дослідити рекомендації щодо написання коду обраної мови програмування, підготувати презентацію з опрацьованого матеріалу.
+
+1.3 Хід роботи
+1) Стильові рекомендації: притримуйтесь стилю коду, зазначеного у PEP8.
+Приклад:
+# Гарний приклад - використання 4 пробілів для відступів
+def xor(a: bytes, b: bytes) -> bytes:
+    return int.to_bytes(
+        int.from_bytes(a, "big") ^ int.from_bytes(b, "big"),
+        len(a),
+        "big",
+    )
+# Поганий приклад - використання 4 пробілів і табів для відступів
+def xor(a: bytes, b: bytes) -> bytes:
+	return int.to_bytes(
+    	int.from_bytes(a, "big") ^ int.from_bytes(b, "big"),
+        len(a),
+        "big",
+    )
+
+2) Іменування змінних функцій і класів: використовуйте CamelCase для
+класів, snake_case для функцій та змінних, нижнє підкреслення для
+приватних змінних.
+Приклад:
+# Гарний приклад
+class BitFlags:
+    __slots__ = ("cls", "value", "parsed",)
+    def __init__(self, value: int, cls: type) -> None:
+        self.cls = cls
+        self.value = value
+        self.parsed = self.parse_flags()
+    def parse_flags(self) -> None:
+        parsed = []
+        old_value = self.value
+        self.value = 0
+        for val in self.cls.values.items():
+            if (old_value & val) == val:
+                parsed.append(val)
+                self.flags |= val
+        return parsed
+# Поганий приклад
+class bitflags:
+    __slots__ = ("cls", "Value", "parsed",)
+    def __init__(self, Value: int, cls: type) -> None:
+        self.cls = cls
+        self.Value = Value
+        self.parsed = self.ParseFlags()
+    def ParseFlags(self) -> None:
+        PARSED = []
+        oldValue = self.Value
+        self.Value = 0
+        for val in self.cls.values.items():
+            if (oldValue & val) == val:
+                PARSED.append(val)
+                self.flags |= val
+        return PARSED
+
+3) Структура коду та проекту: організуйте код у модулі. Рекомендується використання файлів проекту, які описують його модулі, залежності назагальну інформацію (автор, ліцензія. тощо): setup.py/pyproject.toml якщо це бібліотека, яку можна встановити; pyproject.toml для інших типів проектів.
+Приклад розбиття на модулі:
+# Файл mtproto/packets/base.py
+from abc import ABC
+class BasePacket(ABC):
+    ...
+# Файл mtproto/packets/error.py
+from mtproto.packets.base import BasePacket
+class ErrorBacket(BasePacket):
+    def __init__(self, error_code: int) -> None:
+        self.error_code = abs(error_code)
+
+4) Рекомендація з використання принципів рефакторингу: регулярно рефакторте код за такими принципами, як відокремлення методу, відокремлення базового класу, тощо.
+Приклад:
+# До рефакторінгу
+class OrderProcessor:
+    def process_order(self, order: Order) -> None:
+        if not order.is_valid():
+            raise ValueError("Invalid order")
+        total = sum(item.price for item in order.items)
+        if order.is_eligible_for_discount():
+            total *= 0.9
+        self.finalize_payment(total)
+# Після рефакторінгу
+class OrderProcessor:
+    def process_order(self, order: Order) -> None:
+        self._validate_order(order)
+        total = self._calculate_total(order)
+        if order.is_eligible_for_discount():
+            total *= 0.9
+        self.finalize_payment(total)
+    def _validate_order(self, order: Order) -> None:
+        if not order.is_valid():
+            raise ValueError("Invalid order")
+    def _calculate_total(self, order: Order) -> int:
+        return sum(item.price for item in order.items)
+
+5) Оптимізація продуктивності: TODO.
+Приклад:
+# ...
+
+6) Обробка помилок: використовуйте конструкцію try-except для обробки винятків, в except вказуйте тільки ті помилки, які можуть виникнути в коді блоку try-except.
+Приклад:
+# Гарний приклад - в except оброблюються тільки KeyError та ValueError
+try:
+    header, payload, signature = token.split(".")
+    header_dict = json.loads(JWT._b64decode(header))
+    assert_(header_dict["alg"] == "HS512")
+except (KeyError, ValueError) as e:
+    ...
+# Поганий приклад - не зрозуміло, які саме помилки оброблюються в в блоці except (вказан загальний тип - Exception)
+try:
+    header, payload, signature = token.split(".")
+    header_dict = json.loads(JWT._b64decode(header))
+    assert_(header_dict["alg"] == "HS512")
+except Exception as e:
+    ...
+# Поганий приклад - не зрозуміло, які саме помилки оброблюються в в блоці except (тип помилки взагалі не вказаний)
+try:
+    header, payload, signature = token.split(".")
+    header_dict = json.loads(JWT._b64decode(header))
+    assert_(header_dict["alg"] == "HS512")
+except:
+    ...
+
+7) Дотримання парадигм програмування: дотримуйтесь принципів ООП.
+Приклад:
+...
