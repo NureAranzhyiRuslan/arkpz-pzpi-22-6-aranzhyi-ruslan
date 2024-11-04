@@ -121,4 +121,31 @@ except:
     ...
 
 
-# ...
+# Базовий клас пакету
+class BasePacket(ABC):
+    @classmethod
+    @abstractmethod
+    def read(cls, buffer: BytesIO) -> BasePacket: ...
+
+    @abstractmethod
+    def write(self) -> bytes: ...
+
+
+# Клас ErrorPacket, що наслідує BasePacket
+class ErrorPacket(BasePacket):
+    def __init__(self, error_code: int) -> None:
+        self.error_code = error_code
+
+    @classmethod
+    def read(cls, buffer: BytesIO) -> BasePacket:
+        return cls(int.from_bytes(buffer.read(4, "big")))
+
+    def write(self) -> bytes:
+        return int.to_bytes(self.error_code, 4, "big")
+
+
+# Клас UnauthorizedErrorPacket, що наслідує ErrorPacket
+class UnauthorizedErrorPacket(ErrorPacket):
+    # Перевизначення конструктору
+    def __init__(self) -> None:
+        super().__init__(401)
