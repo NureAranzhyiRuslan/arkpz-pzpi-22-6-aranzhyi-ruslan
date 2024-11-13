@@ -20,11 +20,14 @@ class JWTAuthSession:
         return session
 
 
+JwtSessionDep = Annotated[Session, Depends(JWTAuthSession())]
+
+
 class JWTAuthUser:
     def __init__(self, min_role: UserRole):
         self._min_role = min_role
 
-    async def __call__(self, session: Session = Depends(JWTAuthSession())) -> User:
+    async def __call__(self, session: JwtSessionDep) -> User:
         if session.user.role < self._min_role:
             raise CustomMessageException("Insufficient privileges.", 403)
 

@@ -4,6 +4,7 @@ import bcrypt
 from fastapi import APIRouter
 
 from idk import config
+from idk.dependencies import JwtSessionDep
 from idk.models import User, Session
 from idk.schemas.auth import RegisterResponse, RegisterRequest, LoginResponse, LoginRequest
 from idk.utils.custom_exception import CustomMessageException
@@ -46,3 +47,8 @@ async def login(data: LoginRequest):
         "token": session.to_jwt(),
         "expires_at": int(time() + config.AUTH_JWT_TTL),
     }
+
+
+@router.post("/logout", status_code=204)
+async def logout_user(session: JwtSessionDep):
+    await session.delete()
