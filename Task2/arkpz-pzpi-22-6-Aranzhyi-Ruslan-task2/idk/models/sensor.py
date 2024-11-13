@@ -9,6 +9,15 @@ from idk import models
 
 class Sensor(Model):
     id: int = fields.BigIntField(pk=True)
-    owner: models.User = fields.ForeignKeyField("models.User")
+    owner: models.User = fields.ForeignKeyField("models.User", null=True)
     secret_key: str = fields.CharField(max_length=32, default=lambda: urandom(16).hex())
     city: str = fields.CharField(max_length=128)
+    name: str = fields.CharField(max_length=64)
+
+    def to_json(self) -> dict:
+        return {
+            "id": self.id,
+            "secret_key": self.secret_key,
+            "city": self.city,
+            "name": self.name,
+        }

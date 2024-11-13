@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import Header, Depends
 
-from idk.models import Session
+from idk.models import Session, Sensor
 from idk.models.user import UserRole, User
 from idk.utils.custom_exception import CustomMessageException
 
@@ -35,3 +35,13 @@ class JWTAuthUser:
 
 
 JwtAuthUserDep = Annotated[User, Depends(JWTAuthUser(UserRole.USER))]
+
+
+async def sensor_dep(user: JwtAuthUserDep, sensor_id: int) -> Sensor:
+    if (sensor := await Sensor.get_or_none(id=sensor_id, owner=user)) is None:
+        raise CustomMessageException("Unknown sensor.", 404)
+
+    return sensor
+
+
+SensorDep = Annotated[Sensor, Depends(sensor_dep)]
