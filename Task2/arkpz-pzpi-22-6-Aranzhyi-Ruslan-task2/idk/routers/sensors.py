@@ -1,8 +1,9 @@
 from fastapi import APIRouter
 
 from idk.dependencies import JwtAuthUserDep, SensorDep
-from idk.models import Sensor
+from idk.models import Sensor, City
 from idk.schemas.sensors import SensorInfo, AddSensorRequest, EditSensorRequest
+from idk.utils.custom_exception import CustomMessageException
 
 router = APIRouter(prefix="/sensors")
 
@@ -17,7 +18,13 @@ async def get_user_sensors(user: JwtAuthUserDep):
 
 @router.post("", response_model=SensorInfo)
 async def add_sensor(user: JwtAuthUserDep, data: AddSensorRequest):
-    sensor = await Sensor.create(user=user, **data.model_dump())
+    data = data.model_dump()
+    query_key = "name" if isinstance(data["city"], str) else "id"
+    if (city := await City.get_or_none(**{query_key: data["city"]})) is None:
+        raise CustomMessageException("Unknown city.", 404)
+
+    data["city"] = city
+    sensor = await Sensor.create(user=user, **data)
 
     return sensor.to_json()
 

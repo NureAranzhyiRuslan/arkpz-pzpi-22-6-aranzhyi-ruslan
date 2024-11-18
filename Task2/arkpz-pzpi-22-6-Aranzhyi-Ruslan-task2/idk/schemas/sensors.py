@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 class AddSensorRequest(BaseModel):
     city: str
-    name: str
+    name: int | str
 
 
 class SensorInfo(BaseModel):
