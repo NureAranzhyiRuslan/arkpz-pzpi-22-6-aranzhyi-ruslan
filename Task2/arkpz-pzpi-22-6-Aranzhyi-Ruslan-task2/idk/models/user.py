@@ -5,6 +5,8 @@ from enum import IntEnum
 import bcrypt
 from tortoise import fields, Model
 
+from idk.utils.enums import Locale, TemperatureUnits
+
 
 class UserRole(IntEnum):
     USER = 0
@@ -18,6 +20,8 @@ class User(Model):
     email: str = fields.CharField(max_length=255)
     password: str = fields.CharField(max_length=255)
     role: UserRole = fields.IntEnumField(UserRole, default=UserRole.USER)
+    locale: Locale = fields.IntEnumField(Locale, default=Locale.EN)
+    temperature_units: TemperatureUnits = fields.IntEnumField(TemperatureUnits, default=TemperatureUnits.CELSIUS)
 
     def check_password(self, password: str) -> bool:
         return bcrypt.checkpw(password.encode("utf8"), self.password.encode("utf8"))
@@ -29,4 +33,6 @@ class User(Model):
             "first_name": self.first_name,
             "last_name": self.last_name,
             "role": self.role,
+            "locale": self.locale,
+            "temperature_units": self.temperature_units,
         }
