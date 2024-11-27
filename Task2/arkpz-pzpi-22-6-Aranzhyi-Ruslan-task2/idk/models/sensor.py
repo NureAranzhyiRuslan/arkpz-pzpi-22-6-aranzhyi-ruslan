@@ -18,6 +18,6 @@ class Sensor(Model):
         return {
             "id": self.id,
             "secret_key": self.secret_key,
-            "city": self.city,
+            "city": self.city.to_json(),
             "name": self.name,
         }

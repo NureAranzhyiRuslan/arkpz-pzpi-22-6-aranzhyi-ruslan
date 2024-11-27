@@ -2,8 +2,8 @@ from pydantic import BaseModel
 
 
 class AddSensorRequest(BaseModel):
-    city: str
-    name: int | str
+    city: int | str
+    name: str
 
 
 class SensorInfo(BaseModel):
