@@ -13,4 +13,10 @@ class Measurement(Model):
     temperature: float = fields.FloatField()
     pressure: float = fields.FloatField()
     time: datetime = fields.DatetimeField(auto_now_add=True)
-    # TODO: add other characteristics
+
+    def to_json(self) -> dict:
+        return {
+            "temperature": self.temperature,
+            "pressure": self.pressure,
+            "timestamp": int(self.time.timestamp()),
+        }
