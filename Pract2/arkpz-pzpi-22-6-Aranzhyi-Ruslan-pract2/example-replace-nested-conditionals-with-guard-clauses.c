@@ -1,4 +1,4 @@
-// Bad example
+// Before refactoring
 bool utl_Vector_equals(utl_Vector* a, utl_Vector* b) {
     if (a != b) {
         if (a->size == b->size) {
@@ -90,7 +90,7 @@ bool utl_Vector_equals(utl_Vector* a, utl_Vector* b) {
     return true;
 }
 
-// Good example
+// After refactoring
 bool utl_Vector_equals(utl_Vector* a, utl_Vector* b) {
     if(a == b) {
         return true;
