@@ -1,0 +1,117 @@
+МІНІСТЕРСТВО ОСВІТИ І НАУКИ УКРАЇНИ
+
+ХАРКІВСЬКИЙ НАЦІОНАЛЬНИЙ
+УНІВЕРСИТЕТ РАДІОЕЛЕКТРОНІКИ
+
+
+
+Практична робота №2
+
+
+з дисципліни
+«Аналіз та рефакторінг коду»
+
+
+
+
+
+
+Харків 2024
+
+1.1 Тема
+Refactoring methods
+
+1.2 Мета роботи
+TODO: this
+
+1.3 Хід роботи
+
+1) Replace nested conditionals with guard clauses: (TODO: description).
+
+Приклад до рефакторингу:
+bool utl_Vector_equals(utl_Vector* a, utl_Vector* b) {
+    if (a != b) {
+        if (a->size == b->size) {
+            if (a->message_def != NULL && b->message_def != NULL) {
+                if (a->message_def == NULL || a->message_def->type == b->message_def->type) {
+                    if (a->message_def == NULL || a->message_def->type != TLOBJECT || a->message_def->sub.type_def == b->message_def->sub.type_def) {
+                        for (size_t i = 0; i < a->size; i++) {
+                            void* value_a = a->items[i];
+                            void* value_b = a->items[i];
+                            switch (a->message_def->type) {
+                                // Type-based checks
+                            }
+                        }
+                    } else {
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    } else {
+        return true;
+    }
+    
+    return true;
+}
+
+Приклад після рефакторингу:
+bool utl_Vector_equals(utl_Vector* a, utl_Vector* b) {
+    if(a == b) {
+        return true;
+    }
+    if(a->size != b->size) {
+        return false;
+    }
+    if(a->message_def == NULL || b->message_def == NULL) {
+        return false;
+    }
+    if(a->message_def != NULL && a->message_def->type != b->message_def->type) {
+        return false;
+    }
+    if(a->message_def != NULL && a->message_def->type == TLOBJECT && a->message_def->sub.type_def != b->message_def->sub.type_def) {
+        return false;
+    }
+
+    for(size_t i = 0; i < a->size; i++) {
+        void* value_a = a->items[i];
+        void* value_b = a->items[i];
+        switch (a->message_def->type) {
+            // Type-based checks
+        }
+    }
+
+    return true;
+}
+
+2) Replace Magic Number with Symbolic Constant: (TODO: description)
+
+Приклад до рефакторингу:
+// TODO: code
+
+Приклад після рефакторингу:
+// TODO: code
+
+
+3) Remove control flag: (TODO: description).
+
+Приклад до рефакторингу:
+// TODO: code
+
+Приклад після рефакторингу:
+// TODO: code
+
+
+Основні переваги дотримання рекомендацій: 
+TODO (?)
+
+Висновки: (TODO: this).
+
+Список використаних джерел:
+1. TODO: refactoring methods book
