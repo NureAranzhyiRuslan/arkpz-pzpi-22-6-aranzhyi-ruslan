@@ -9,7 +9,7 @@ from tortoise import Tortoise
 from tortoise.contrib.fastapi import RegisterTortoise
 
 from . import config
-from .routers import auth, user, sensors, measurements, forecast
+from .routers import auth, user, sensors, measurements, forecast, admin
 from .utils.custom_exception import CustomMessageException
 
 
@@ -58,6 +58,7 @@ app.include_router(user.router)
 app.include_router(sensors.router)
 app.include_router(measurements.router)
 app.include_router(forecast.router)
+app.include_router(admin.router)
 
 
 @app.exception_handler(CustomMessageException)

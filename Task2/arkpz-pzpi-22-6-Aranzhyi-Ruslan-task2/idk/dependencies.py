@@ -32,7 +32,8 @@ class JWTAuthUser:
         return session.user
 
 
-JwtAuthUserDep = Annotated[User, Depends(JWTAuthUser(UserRole.USER))]
+JwtAuthUserDepN = Depends(JWTAuthUser(UserRole.USER))
+JwtAuthUserDep = Annotated[User, JwtAuthUserDepN]
 
 
 async def sensor_dep(user: JwtAuthUserDep, sensor_id: int) -> Sensor:
