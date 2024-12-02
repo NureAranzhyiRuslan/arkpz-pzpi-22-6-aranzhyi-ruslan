@@ -1,0 +1,131 @@
+МІНІСТЕРСТВО ОСВІТИ І НАУКИ УКРАЇНИ
+
+ХАРКІВСЬКИЙ НАЦІОНАЛЬНИЙ
+УНІВЕРСИТЕТ РАДІОЕЛЕКТРОНІКИ
+
+
+
+Лабораторна робота №2
+
+
+з дисципліни
+«Аналіз та рефакторінг коду»
+
+
+
+
+
+
+
+
+Харків 2024
+
+1 РОЗРОБКА БАЗИ ДАНИХ ДЛЯ СЕРВЕРНОЇ ЧАСТИНИ ПРОГРАМНОЇ СИСТЕМИ ТА ПРИКЛАДНОГО ПРОГРАМНОГО ІНТЕРФЕЙСУ
+1.1 Мета роботи
+Розробити базу даних для серверної частини  програмної системи та прикладного програмного інтерфейсу.
+1.2 Хід роботи
+1.2.1 Створити UML діаграму прецедентів для серверної частини системи.
+
+
+Рисунок 1 - UML діаграму прецедентів взаємодії адміністратора з системою
+
+
+Рисунок 2 - UML діаграма прецедентів взаємодії користувачів з системою
+
+
+Рисунок 3 - UML діаграма прецедентів взаємодії IoT-пристою з системою
+
+1.2.2 Створити ER діаграму даних.
+
+TODO
+Рисунок 4 - ER діаграма даних
+
+1.2.3 Розробити базу даних (БД) програмної системи.
+
+Таблиця 1 - Таблиця бази даних “users”
+id	BIGINT PRIMARY KEY
+first_name	VARCHAR(128)
+last_name	VARCHAR(128)
+email	VARCHAR(256)
+password	VARCHAR(255)
+role	SMALLINT
+locale	SMALLINT
+temperature_units	SMALLINT
+
+Таблиця 2 - Таблиця бази даних “sessions”
+id	BIGINT PRIMARY KEY
+user_id	BIGINT
+nonce	VARCHAR(16)
+created_at	DATETIME
+
+Таблиця 3 - Таблиця бази даних “cities”
+id	BIGINT PRIMARY KEY
+name	VARCHAR(128)
+latitude	DOUBLE
+longitude	DOUBLE
+
+Таблиця 4 - Таблиця бази даних “sensors”
+id	BIGINT PRIMARY KEY
+user_id	BIGINT
+api_key_part	VARCHAR(32)
+city_id	BIGINT
+name	VARCHAR(64)
+
+Таблиця 5 - Таблиця бази даних “measurements”
+id	BIGINT PRIMARY KEY
+sensor_id	BIGINT
+temperature	DOUBLE
+pressure	DOUBLE
+timestamp	DATETIME
+
+Таблиця 6 - Таблиця бази даних “forecasts”
+id	BIGINT PRIMARY KEY
+city_id	BIGINT
+timestamp	DATETIME
+temperature	DOUBLE
+info_text	VARCHAR(128)
+
+1.2.4 Створити діаграму структури БД.
+
+
+Рисунок 5 - Діаграма структури бази даних
+
+1.2.5 Розробити функції роботи з БД (ORM).
+1.2.6 Розробити API (REST) для взаємодії серверної частини з клієнтами.
+1.2.7 Створити специфікацію розробленого API.
+
+Таблиця 7 - Специфікація API
+POST	/auth/register	Регістрація користувачів
+POST	/auth/login	Авторизація користувачів
+POST	/auth/logout	Вихід користувачів з аккаунту
+GET	/user/info	Запит інформації користувача
+PATCH	/user/info	Редагування інформації користувача
+GET	/sensors	Запит IoT-пристроїв користувача
+POST	/sensors	Додавання нового IoT-пристрою користувача
+GET	/sensors/{sensor_id}	Запит інформації про IoT-пристрій користувача
+PATCH	/sensors/{sensor_id}	Редагування інформації про IoT-пристрій користувача
+DELETE	/sensors/{sensor_id}	Видалення IoT-пристрою користувача
+POST	/measurements	Відправка погодних даних з IoT-пристрою
+GET	/measurements/{sensor_id}	Запит погодних даних з конкретного IoT-пристрою
+POST	/forecast/{sensor_id}	Запит прогнозу погоди з конкретного IoT-пристрою
+GET	/forecast/city	Запит прогнозу погоди для міста
+GET	/admin/cities	Запит інформації про міста
+POST	/admin/cities	Додавання нового міста
+PATCH	/admin/cities/{city_id}	Редагування міста
+DELETE	/admin/cities/{city_id}	Видалення міста
+GET	/admin/users	Запит інформації про користувачів
+GET	/admin/users/{user_id}	Запит інформації про користувача
+DELETE	/admin/users/{user_id}	Видалення користувача
+GET	/admin/users/{user_id}/sensors	Запит IoT-пристроїв користувача
+GET	/admin/sensors	Запит інформації про IoT-пристрої
+GET	/admin/sensors/{sensor_id}	Запит інформації про IoT-пристрої
+DELETE	/admin/sensors/{sensor_id}	Видалення IoT-пристрою
+GET	/admin/sensors/{sensor_id}/measurements	Запит погодних вимірювань IoT-пристрою
+GET	/admin/measurements	Запит інформації про погодні вимірювання
+GET	/admin/measurements/{measurement_id}	Запит інформації про погодне вимірювання
+DELETE	/admin/measurements/{measurement_id}	Видалення погодного вимірювання
+
+1.2.8 Створити програмну реалізацію розробленого API та функцій роботи з БД.
+1.2.9 Перевірити роботу створеного програмного коду серверної частини системи.
+
+Висновок: під час виконання лабораторної роботи було розроблено базу даних для серверної частини  програмної системи та прикладний програмний інтерфейс. Відео демонстрації доступно за посиланням: https://www.youtube.com/watch?v=....
