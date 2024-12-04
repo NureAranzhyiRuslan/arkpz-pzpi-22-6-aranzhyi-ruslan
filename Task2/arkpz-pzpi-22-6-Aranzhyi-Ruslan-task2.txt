@@ -37,7 +37,6 @@
 
 1.2.2 Створити ER діаграму даних.
 
-TODO
 Рисунок 4 - ER діаграма даних
 
 1.2.3 Розробити базу даних (БД) програмної системи.
@@ -91,6 +90,92 @@ info_text	VARCHAR(128)
 Рисунок 5 - Діаграма структури бази даних
 
 1.2.5 Розробити функції роботи з БД (ORM).
+Були роброблені моделі бази даних з використанням Tortoise-ORM:
+
+class User(Model):
+
+    id: int = fields.BigIntField(pk=True)
+
+    first_name: str = fields.CharField(max_length=128)
+
+    last_name: str = fields.CharField(max_length=128)
+
+    email: str = fields.CharField(max_length=255)
+
+    password: str = fields.CharField(max_length=255)
+
+    role: UserRole = fields.IntEnumField(UserRole, default=UserRole.USER)
+
+    locale: Locale = fields.IntEnumField(Locale, default=Locale.EN)
+
+temperature_units: TemperatureUnits = fields.IntEnumField(TemperatureUnits, default=TemperatureUnits.CELSIUS)
+
+
+
+class Session(Model):
+
+    id: int = fields.BigIntField(pk=True)
+
+    user: models.User = fields.ForeignKeyField("models.User")
+
+    nonce: str = fields.CharField(max_length=16, default=lambda: urandom(8).hex())
+
+created_at: datetime = fields.DatetimeField(auto_now_add=True)
+
+
+
+class City(Model):
+
+    id: int = fields.BigIntField(pk=True)
+
+    name: str = fields.CharField(max_length=128)
+
+    latitude: float = fields.FloatField()
+
+longitude: float = fields.FloatField()
+
+
+
+class Sensor(Model):
+
+    id: int = fields.BigIntField(pk=True)
+
+    owner: models.User = fields.ForeignKeyField("models.User", null=True)
+
+    secret_key: str = fields.CharField(max_length=32, default=lambda: urandom(16).hex())
+
+    city: models.City = fields.ForeignKeyField("models.City")
+
+name: str = fields.CharField(max_length=64)
+
+
+
+class Measurement(Model):
+
+    id: int = fields.BigIntField(pk=True)
+
+    sensor: models.Sensor = fields.ForeignKeyField("models.Sensor")
+
+    temperature: float = fields.FloatField()
+
+    pressure: float = fields.FloatField()
+
+time: datetime = fields.DatetimeField(auto_now_add=True)
+
+
+
+class Forecast(Model):
+
+    id: int = fields.BigIntField(pk=True)
+
+    city: models.City = fields.ForeignKeyField("models.City")
+
+    info_text: str = fields.CharField(max_length=128)
+
+    temperature: float = fields.FloatField()
+
+    timestamp: datetime = fields.DatetimeField(auto_now_add=True)
+
 1.2.6 Розробити API (REST) для взаємодії серверної частини з клієнтами.
 1.2.7 Створити специфікацію розробленого API.
 
