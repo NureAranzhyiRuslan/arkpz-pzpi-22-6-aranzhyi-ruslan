@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 
+from idk.schemas.cities import CityInfoResponse
+
 
 class AddSensorRequest(BaseModel):
     city: int | str
@@ -9,7 +11,7 @@ class AddSensorRequest(BaseModel):
 class SensorInfo(BaseModel):
     id: int
     secret_key: str
-    city: str
+    city: CityInfoResponse
     name: str
 
 

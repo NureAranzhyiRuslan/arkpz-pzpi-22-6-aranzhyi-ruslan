@@ -50,7 +50,7 @@ async def get_user_sensors(user_id: int, query: PaginationQuery = Query()):
     return {
         "count": count,
         "result": [
-            sensor.to_json()
+            await sensor.to_json()
             for sensor in sensors
         ]
     }

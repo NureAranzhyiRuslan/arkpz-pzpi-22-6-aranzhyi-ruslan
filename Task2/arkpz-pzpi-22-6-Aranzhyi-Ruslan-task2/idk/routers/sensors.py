@@ -11,7 +11,7 @@ router = APIRouter(prefix="/sensors")
 @router.get("", response_model=list[SensorInfo])
 async def get_user_sensors(user: JwtAuthUserDep):
     return [
-        sensor.to_json()
+        await sensor.to_json()
         for sensor in await Sensor.filter(owner=user)
     ]
 
@@ -24,14 +24,14 @@ async def add_sensor(user: JwtAuthUserDep, data: AddSensorRequest):
         raise CustomMessageException("Unknown city.", 404)
 
     data["city"] = city
-    sensor = await Sensor.create(user=user, **data)
+    sensor = await Sensor.create(owner=user, **data)
 
-    return sensor.to_json()
+    return await sensor.to_json()
 
 
 @router.get("/{sensor_id}", response_model=SensorInfo)
 async def get_sensor(sensor: SensorDep):
-    return sensor.to_json()
+    return await sensor.to_json()
 
 
 @router.patch("/{sensor_id}", response_model=SensorInfo)
@@ -40,9 +40,10 @@ async def edit_sensor(sensor: SensorDep, data: EditSensorRequest):
         sensor.update_from_dict(update_fields)
         await sensor.save(update_fields=list(update_fields.keys()))
 
-    return sensor.to_json()
+    return await sensor.to_json()
 
 
 @router.delete("/{sensor_id}", status_code=204)
 async def delete_sensor(sensor: SensorDep):
-    await sensor.update(owner=None)
+    sensor.owner = None
+    await sensor.save()

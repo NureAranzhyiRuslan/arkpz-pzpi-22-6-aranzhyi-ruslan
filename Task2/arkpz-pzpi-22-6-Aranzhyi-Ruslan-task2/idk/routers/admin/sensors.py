@@ -19,7 +19,7 @@ async def get_sensors(query: PaginationQuery = Query()):
     return {
         "count": count,
         "result": [
-            sensor.to_json()
+            await sensor.to_json()
             for sensor in sensors
         ]
     }
@@ -30,7 +30,7 @@ async def get_sensor(sensor_id: int):
     if (sensor := await Sensor.get_or_none(id=sensor_id)) is None:
         raise CustomMessageException("Unknown sensor.", 404)
 
-    return sensor.to_json()
+    return await sensor.to_json()
 
 
 @router.delete("/{sensor_id}", dependencies=[JwtAuthUserDepN], status_code=204)

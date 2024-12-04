@@ -14,7 +14,9 @@ class Sensor(Model):
     city: models.City = fields.ForeignKeyField("models.City")
     name: str = fields.CharField(max_length=64)
 
-    def to_json(self) -> dict:
+    async def to_json(self) -> dict:
+        if not isinstance(self.city, models.City):
+            await self.fetch_related("city")
         return {
             "id": self.id,
             "secret_key": self.secret_key,

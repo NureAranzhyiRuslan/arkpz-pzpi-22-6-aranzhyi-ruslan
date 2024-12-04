@@ -1,4 +1,4 @@
-from .user import User
+from .user import User, UserRole
 from .session import Session
 from .city import City
 from .sensor import Sensor

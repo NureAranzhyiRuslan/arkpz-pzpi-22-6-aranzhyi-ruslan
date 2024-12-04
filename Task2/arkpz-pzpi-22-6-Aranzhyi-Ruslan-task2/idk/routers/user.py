@@ -13,7 +13,6 @@ async def get_user_info(user: JwtAuthUserDep):
 @router.patch("/info", response_model=UserInfoResponse)
 async def edit_user_info(user: JwtAuthUserDep, data: UserInfoEditRequest):
     if update_fields := data.model_dump(exclude_defaults=True):
-        user.update_from_dict(update_fields)
-        await user.save(update_fields=list(update_fields.keys()))
+        await user.update_from_dict(update_fields).save(update_fields=list(update_fields.keys()))
 
     return user.to_json()
