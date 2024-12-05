@@ -46,13 +46,16 @@ async def test_edit_sensor(client: AsyncClient):
     user = await create_user()
     token = (await Session.create(user=user)).to_jwt()
     city = await City.create(name="test", latitude=42.24, longitude=24.42)
+    city2 = await City.create(name="test2", latitude=42.24, longitude=24.42)
     sensor = await Sensor.create(owner=user, city=city, name="test123")
 
     response = await client.patch(f"/sensors/{sensor.id}", headers={"authorization": token}, json={
         "name": "new_name",
+        "city": "test2",
     })
     assert response.status_code == 200, response.json()
     assert response.json()["name"] == "new_name"
+    assert response.json()["city"]["id"] == city2.id
 
     response = await client.get(f"/sensors/{sensor.id}", headers={"authorization": token})
     assert response.status_code == 200, response.json()

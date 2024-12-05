@@ -61,7 +61,7 @@ def calculate_zambretti_method(measurements: list[dict[str, str | float]], real_
 @router.post("/{sensor_id}", response_model=ForecastResponse)
 async def get_sensor_forecast_zambretti(sensor: SensorDep):
     measurements = await Measurement.filter(
-        sensor=sensor, time_gt=(datetime.now(UTC) - timedelta(days=1))
+        sensor=sensor, time__gt=(datetime.now(UTC) - timedelta(days=1))
     ).order_by("time")
 
     return calculate_zambretti_method([
