@@ -17,9 +17,11 @@ class Sensor(Model):
     async def to_json(self) -> dict:
         if not isinstance(self.city, models.City):
             await self.fetch_related("city")
+        if not isinstance(self.owner, models.User):
+            await self.fetch_related("owner")
         return {
             "id": self.id,
-            "secret_key": self.secret_key,
+            "secret_key": f"{self.owner.id}:{self.id}:{self.secret_key}",
             "city": self.city.to_json(),
             "name": self.name,
         }
