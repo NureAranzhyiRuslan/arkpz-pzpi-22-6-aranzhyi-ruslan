@@ -1,0 +1,6 @@
+arkpz-pzpi-*-task3/poetry.lock
+arkpz-pzpi-*-task3/.github
+arkpz-pzpi-*-task3/docker-compose.yml
+arkpz-pzpi-*-task3/Dockerfile
+arkpz-pzpi-*-task3/.env.example
+arkpz-pzpi-*-task3/entrypoint.sh
