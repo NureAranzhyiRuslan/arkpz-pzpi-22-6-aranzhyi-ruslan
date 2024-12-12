@@ -1,6 +1,6 @@
 from fastapi import Query, APIRouter
 
-from idk.dependencies import JwtAuthUserDepN
+from idk.dependencies import JwtAuthAdminDepN
 from idk.models import User, Sensor
 from idk.schemas.common import PaginationResponse, PaginationQuery
 from idk.schemas.sensors import SensorInfo
@@ -10,7 +10,7 @@ from idk.utils.custom_exception import CustomMessageException
 router = APIRouter(prefix="/users")
 
 
-@router.get("", dependencies=[JwtAuthUserDepN], response_model=PaginationResponse[UserInfoResponse])
+@router.get("", dependencies=[JwtAuthAdminDepN], response_model=PaginationResponse[UserInfoResponse])
 async def get_users(query: PaginationQuery = Query()):
     db_query = User.all().order_by("id")
     count = await db_query.count()
@@ -25,7 +25,7 @@ async def get_users(query: PaginationQuery = Query()):
     }
 
 
-@router.get("/{user_id}", dependencies=[JwtAuthUserDepN], response_model=UserInfoResponse)
+@router.get("/{user_id}", dependencies=[JwtAuthAdminDepN], response_model=UserInfoResponse)
 async def get_user(user_id: int):
     if (user := await User.get_or_none(id=user_id)) is None:
         raise CustomMessageException("Unknown user.", 404)
@@ -33,12 +33,12 @@ async def get_user(user_id: int):
     return user.to_json()
 
 
-@router.delete("/{user_id}", dependencies=[JwtAuthUserDepN], status_code=204)
+@router.delete("/{user_id}", dependencies=[JwtAuthAdminDepN], status_code=204)
 async def delete_user(user_id: int):
     await User.filter(id=user_id).delete()
 
 
-@router.get("/{user_id}/sensors", dependencies=[JwtAuthUserDepN], response_model=PaginationResponse[SensorInfo])
+@router.get("/{user_id}/sensors", dependencies=[JwtAuthAdminDepN], response_model=PaginationResponse[SensorInfo])
 async def get_user_sensors(user_id: int, query: PaginationQuery = Query()):
     if (user := await User.get_or_none(id=user_id)) is None:
         raise CustomMessageException("Unknown user.", 404)

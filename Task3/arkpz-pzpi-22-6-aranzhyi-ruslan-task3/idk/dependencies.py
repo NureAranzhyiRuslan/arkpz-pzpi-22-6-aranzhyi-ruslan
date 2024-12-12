@@ -35,6 +35,9 @@ class JWTAuthUser:
 JwtAuthUserDepN = Depends(JWTAuthUser(UserRole.USER))
 JwtAuthUserDep = Annotated[User, JwtAuthUserDepN]
 
+JwtAuthAdminDepN = Depends(JWTAuthUser(UserRole.ADMIN))
+JwtAuthAdminDep = Annotated[User, JwtAuthAdminDepN]
+
 
 async def sensor_dep(user: JwtAuthUserDep, sensor_id: int) -> Sensor:
     if (sensor := await Sensor.get_or_none(id=sensor_id, owner=user)) is None:

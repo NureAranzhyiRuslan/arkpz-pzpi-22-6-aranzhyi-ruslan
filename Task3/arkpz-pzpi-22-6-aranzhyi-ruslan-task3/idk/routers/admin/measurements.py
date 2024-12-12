@@ -1,6 +1,6 @@
 from fastapi import Query, APIRouter
 
-from idk.dependencies import JwtAuthUserDepN
+from idk.dependencies import JwtAuthAdminDepN
 from idk.models import Measurement
 from idk.schemas.common import PaginationResponse, PaginationQuery
 from idk.schemas.measurements import MeasurementInfo
@@ -9,7 +9,7 @@ from idk.utils.custom_exception import CustomMessageException
 router = APIRouter(prefix="/measurements")
 
 
-@router.get("", dependencies=[JwtAuthUserDepN], response_model=PaginationResponse[MeasurementInfo])
+@router.get("", dependencies=[JwtAuthAdminDepN], response_model=PaginationResponse[MeasurementInfo])
 async def get_measurements(query: PaginationQuery = Query()):
     db_query = Measurement.all().order_by("id")
     count = await db_query.count()
@@ -24,7 +24,7 @@ async def get_measurements(query: PaginationQuery = Query()):
     }
 
 
-@router.get("/{measurement_id}", dependencies=[JwtAuthUserDepN], response_model=MeasurementInfo)
+@router.get("/{measurement_id}", dependencies=[JwtAuthAdminDepN], response_model=MeasurementInfo)
 async def get_measurement(measurement_id: int):
     if (measurement := await Measurement.get_or_none(id=measurement_id)) is None:
         raise CustomMessageException("Unknown measurement.", 404)
@@ -32,6 +32,6 @@ async def get_measurement(measurement_id: int):
     return measurement.to_json()
 
 
-@router.delete("/{measurement_id}", dependencies=[JwtAuthUserDepN], status_code=204)
+@router.delete("/{measurement_id}", dependencies=[JwtAuthAdminDepN], status_code=204)
 async def delete_measurement(measurement_id: int):
     await Measurement.filter(id=measurement_id).delete()

@@ -1,6 +1,6 @@
 from fastapi import Query, APIRouter
 
-from idk.dependencies import JwtAuthUserDepN
+from idk.dependencies import JwtAuthAdminDepN
 from idk.models import City
 from idk.schemas.cities import CityInfoResponse, CityCreateRequest
 from idk.schemas.common import PaginationResponse, PaginationQuery
@@ -9,7 +9,7 @@ from idk.utils.custom_exception import CustomMessageException
 router = APIRouter(prefix="/cities")
 
 
-@router.get("", dependencies=[JwtAuthUserDepN], response_model=PaginationResponse[CityInfoResponse])
+@router.get("", dependencies=[JwtAuthAdminDepN], response_model=PaginationResponse[CityInfoResponse])
 async def get_cities(query: PaginationQuery = Query()):
     db_query = City.all().order_by("id")
     count = await db_query.count()
@@ -24,7 +24,7 @@ async def get_cities(query: PaginationQuery = Query()):
     }
 
 
-@router.get("/{city_id}", dependencies=[JwtAuthUserDepN], response_model=CityInfoResponse)
+@router.get("/{city_id}", dependencies=[JwtAuthAdminDepN], response_model=CityInfoResponse)
 async def get_city(city_id: int):
     if (city := await City.get_or_none(id=city_id)) is None:
         raise CustomMessageException("Unknown city.", 404)
@@ -32,14 +32,14 @@ async def get_city(city_id: int):
     return city.to_json()
 
 
-@router.post("", dependencies=[JwtAuthUserDepN], response_model=CityInfoResponse)
+@router.post("", dependencies=[JwtAuthAdminDepN], response_model=CityInfoResponse)
 async def create_city(data: CityCreateRequest):
     city = await City.create(**data.model_dump())
 
     return city.to_json()
 
 
-@router.patch("/{city_id}", dependencies=[JwtAuthUserDepN], response_model=CityInfoResponse)
+@router.patch("/{city_id}", dependencies=[JwtAuthAdminDepN], response_model=CityInfoResponse)
 async def edit_city(city_id: int, data: CityCreateRequest):
     if (city := await City.get_or_none(id=city_id)) is None:
         raise CustomMessageException("Unknown city.", 404)
@@ -51,6 +51,6 @@ async def edit_city(city_id: int, data: CityCreateRequest):
     return city.to_json()
 
 
-@router.delete("/{city_id}", dependencies=[JwtAuthUserDepN], status_code=204)
+@router.delete("/{city_id}", dependencies=[JwtAuthAdminDepN], status_code=204)
 async def delete_city(city_id: int):
     await City.filter(id=city_id).delete()
