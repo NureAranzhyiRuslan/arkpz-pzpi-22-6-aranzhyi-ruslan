@@ -4,8 +4,10 @@ from fastapi import APIRouter
 from pytz import UTC
 
 from idk.dependencies import SensorDep
+from idk.localized_strings import zambretti_text
 from idk.models import Measurement
 from idk.schemas.forecast import ForecastResponse
+from idk.utils.enums import Locale
 
 AVERAGE_ALTITUDE = 150  # Meters (Ukraine)
 WINTER_MONTHS = (12, 1, 2)
@@ -14,7 +16,9 @@ SUMMER_MONTHS = (6, 7, 8)
 router = APIRouter(prefix="/forecast")
 
 
-def calculate_zambretti_method(measurements: list[dict[str, str | float]], real_count: int | None = None) -> dict:
+def calculate_zambretti_method(
+        measurements: list[dict[str, str | float]], real_count: int | None = None, locale: Locale = Locale.EN
+) -> dict:
     pressure_mts = [measurement["pressure"] for measurement in measurements]
 
     # Pressure trend
@@ -30,11 +34,11 @@ def calculate_zambretti_method(measurements: list[dict[str, str | float]], real_
     altitude = 0.0065 * AVERAGE_ALTITUDE
     p0 = pressure_mts[-1] * ((1 - altitude / (measurements[-1]["temperature"] + altitude + 273.15)) ** (-5.257))
     if pressure_delta >= 1:
-        z = 179 - 2 * p0 / 128
+        z = 179 - 20 * p0 / 129
     elif pressure_delta <= -1:
-        z = 130 - p0 / 81
+        z = 130 - 10 * p0 / 81
     else:
-        z = 147 - 5 * p0 / 376
+        z = 147 - 50 * p0 / 376
 
     this_month = datetime.now().month
     if this_month in WINTER_MONTHS and pressure_delta <= -1:
@@ -43,11 +47,10 @@ def calculate_zambretti_method(measurements: list[dict[str, str | float]], real_
         z += 1
 
     z = int(z)
-
     next_temp = measurements[-1]["temperature"] + measurements[-1]["temperature"] * a
 
     return {
-        "info_text": "TODO",
+        "info_text": zambretti_text[locale][z - 1],
         "temperature": next_temp,
         "details": {
             "measurements_count": count,
@@ -67,13 +70,15 @@ async def get_sensor_forecast_zambretti(sensor: SensorDep):
         sensor=sensor, time__gt=(datetime.now(UTC) - timedelta(days=1))
     ).order_by("time")
 
+    await sensor.fetch_related("owner")
+
     return calculate_zambretti_method([
         {
             "pressure": measurement.pressure,
             "temperature": measurement.temperature,
         }
         for measurement in measurements
-    ])
+    ], locale=sensor.owner.locale)
 
 
 @router.get("/city", response_model=ForecastResponse)
@@ -83,7 +88,7 @@ async def get_city_forecast(city: int | str):
         "sensor__city__name" if isinstance(city, str) else "sensor__city__id": city
     }
     measurements_all = await Measurement.filter(*query).order_by("time")
-    measurements = []
+    measurements: list[dict] = []
     for measurement in measurements_all:
         time_section = int(measurement.time.timestamp()) % (60 * 30)
         if not measurements or measurements[-1]["time"] != time_section:
