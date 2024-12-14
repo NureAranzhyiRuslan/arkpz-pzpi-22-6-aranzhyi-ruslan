@@ -13,3 +13,12 @@ class Forecast(Model):
     info_text: str = fields.CharField(max_length=128)
     temperature: float = fields.FloatField()
     timestamp: datetime = fields.DatetimeField(auto_now_add=True)
+
+    def to_json(self) -> dict:
+        return {
+            "info_text": self.info_text,
+            "temperature": self.temperature,
+            "details": {
+                "has_details": False,
+            }
+        }

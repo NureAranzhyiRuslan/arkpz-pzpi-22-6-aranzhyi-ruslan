@@ -5,13 +5,16 @@ from pytz import UTC
 
 from idk.dependencies import SensorDep
 from idk.localized_strings import zambretti_text
-from idk.models import Measurement
+from idk.models import Measurement, Forecast, City
 from idk.schemas.forecast import ForecastResponse
+from idk.utils.custom_exception import CustomMessageException
 from idk.utils.enums import Locale
 
 AVERAGE_ALTITUDE = 150  # Meters (Ukraine)
 WINTER_MONTHS = (12, 1, 2)
 SUMMER_MONTHS = (6, 7, 8)
+ZERO_KELVIN = -273.15
+THERMAL_GRADIENT_PER_METER = 0.0065
 
 router = APIRouter(prefix="/forecast")
 
@@ -31,8 +34,11 @@ def calculate_zambretti_method(
     a /= count * sum_x_sq - sum_x * sum_x
     pressure_delta = a * count
 
-    altitude = 0.0065 * AVERAGE_ALTITUDE
-    p0 = pressure_mts[-1] * ((1 - altitude / (measurements[-1]["temperature"] + altitude + 273.15)) ** (-5.257))
+    # Pressure at sea level
+    altitude = THERMAL_GRADIENT_PER_METER * AVERAGE_ALTITUDE
+    p0 = pressure_mts[-1] * ((1 - altitude / (measurements[-1]["temperature"] + altitude - ZERO_KELVIN)) ** (-5.257))
+
+    # Zambretti algorithm itself
     if pressure_delta >= 1:
         z = 179 - 20 * p0 / 129
     elif pressure_delta <= -1:
@@ -53,6 +59,7 @@ def calculate_zambretti_method(
         "info_text": zambretti_text[locale][z - 1],
         "temperature": next_temp,
         "details": {
+            "has_details": True,
             "measurements_count": count,
             "measurements_db_count": real_count or count,
             "pressure_average": sum_y / count,
@@ -83,9 +90,19 @@ async def get_sensor_forecast_zambretti(sensor: SensorDep):
 
 @router.get("/city", response_model=ForecastResponse)
 async def get_city_forecast(city: int | str):
+    if (city := await City.get_or_none(**{"name" if isinstance(city, str) else "id": city})) is None:
+        raise CustomMessageException("Unknown city.", 404)
+
+    forecast_query = {
+        "time__lt": datetime.now(UTC) - timedelta(hours=1),
+        "city": city,
+    }
+    if forecast := await Forecast.filter(**forecast_query).order_by("-timestamp").first():
+        return forecast.to_json()
+
     query = {
         "time__gt": datetime.now(UTC) - timedelta(days=1),
-        "sensor__city__name" if isinstance(city, str) else "sensor__city__id": city
+        "city": city,
     }
     measurements_all = await Measurement.filter(*query).order_by("time")
     measurements: list[dict] = []
@@ -109,4 +126,14 @@ async def get_city_forecast(city: int | str):
         measurements[-1]["pressure_items"].append(measurement.pressure)
         measurements[-1]["temperature_items"].append(measurement.temperature)
 
-    return calculate_zambretti_method(measurements, len(measurements_all))
+    if not measurements:
+        raise CustomMessageException("No measurements found for last day", 400)
+
+    result = calculate_zambretti_method(measurements, len(measurements_all))
+    await Forecast.create(
+        city=city,
+        info_text=result["info_text"],
+        temperature=result["temperature"],
+    )
+
+    return result
