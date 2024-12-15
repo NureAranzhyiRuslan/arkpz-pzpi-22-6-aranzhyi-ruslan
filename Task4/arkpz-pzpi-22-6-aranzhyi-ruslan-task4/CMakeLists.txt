@@ -10,4 +10,8 @@ add_executable(atark_iot
 target_include_directories(atark_iot PRIVATE include)
 target_link_libraries(atark_iot cpr)
 
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    target_compile_options(atark_iot PRIVATE -fPIC -fvisibility=hidden -Os -s -Wl,--gc-sections -flto=auto)
+endif()
+
 # TODO: add cpr and toml++ in here with require_package
