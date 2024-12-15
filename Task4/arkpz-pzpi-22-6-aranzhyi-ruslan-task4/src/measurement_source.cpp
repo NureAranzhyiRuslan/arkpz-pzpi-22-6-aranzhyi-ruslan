@@ -1,7 +1,7 @@
 #include "measurement_source.h"
 
 CSVMeasurementSource::CSVMeasurementSource(const toml::table& config) : MeasurementSource(config) {
-    const auto filename = config["source.csv.file_path"].value<std::string>();
+    const auto filename = config["source"]["csv"]["file_path"].value<std::string>();
     if (!filename) {
         throw std::runtime_error(R"(Failed to open CSV file: "file_path" under "[source.csv]" is not specified!)");
     }
@@ -30,7 +30,7 @@ Measurement CSVMeasurementSource::getMeasurement() {
 
 
 MeasurementSource* MeasurementSource::createSource(const toml::table& config) {
-    const std::string sourceClass = config["sensor.measurement_source"].value_or<std::string>("");
+    const std::string sourceClass = config["sensor"]["measurement_source"].value_or<std::string>("");
     if (sourceClass == "CSVMeasurementSource") {
         return new CSVMeasurementSource(config);
     }

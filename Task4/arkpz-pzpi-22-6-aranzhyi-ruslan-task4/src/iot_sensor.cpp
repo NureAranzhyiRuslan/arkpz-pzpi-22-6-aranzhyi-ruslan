@@ -5,19 +5,19 @@
 
 
 IotSensor::IotSensor(const toml::table& config) {
-    const auto api_host = config["server.host"].value<std::string>();
+    const auto api_host = config["server"]["host"].value<std::string>();
     if (!api_host) {
         throw std::runtime_error("Failed to initialize: \"host\" under \"[server]\" is not specified!");
     }
     this->api_host = api_host.value();
 
-    const auto api_key = config["server.api_key"].value<std::string>();
+    const auto api_key = config["server"]["api_key"].value<std::string>();
     if (!api_key) {
         throw std::runtime_error("Failed to initialize: \"api_key\" under \"[server]\" is not specified!");
     }
     this->api_key = api_key.value();
 
-    const auto measurement_interval = config["server.host"].value<uint32_t>();
+    const auto measurement_interval = config["sensor"]["measurement_interval"].value<uint32_t>();
     if (!measurement_interval) {
         throw std::runtime_error(
             "Failed to initialize: \"measurement_interval\" under \"[sensor]\" is not specified!");
@@ -29,7 +29,7 @@ IotSensor::IotSensor(const toml::table& config) {
         throw std::runtime_error("Failed to create measurements source!");
     }
 
-    this->measurements_count = config["sensor.measurement_count"].value_or<uint16_t>(32);
+    this->measurements_count = config["sensor"]["measurement_count"].value_or<uint16_t>(32);
     this->last_measurements = new Measurement[this->measurements_count];
 
     for (int i = 0; i < measurements_count; ++i) {
@@ -51,7 +51,7 @@ void IotSensor::run() {
 }
 
 void IotSensor::sendData(Measurement measurement) {
-    cpr::Response resp = cpr::Post(cpr::Url{api_host},
+    cpr::Response resp = cpr::Post(cpr::Url{api_host + "/measurements"},
                                    cpr::Header{{"Authorization", api_key}},
                                    cpr::Body{
                                        std::format("{{ \"temperature\": {:.2f}, \"pressure\": {:.2f} }}",
