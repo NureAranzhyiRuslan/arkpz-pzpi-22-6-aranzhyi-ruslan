@@ -1,0 +1,11 @@
+[server]
+host = "http://127.0.0.1:8000"
+api_key = "api_key_here"
+
+[sensor]
+measurement_interval = 300
+measurement_source = "CSVMeasurementSource"
+measurement_count = 144
+
+[source.csv]
+file_path = "data.csv"
