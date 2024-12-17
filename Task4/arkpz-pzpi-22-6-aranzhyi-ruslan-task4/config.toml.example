@@ -6,6 +6,7 @@ api_key = "api_key_here"
 measurement_interval = 300
 measurement_source = "CSVMeasurementSource"
 measurement_count = 144
+altitude = 150
 
 [source.csv]
 file_path = "data.csv"

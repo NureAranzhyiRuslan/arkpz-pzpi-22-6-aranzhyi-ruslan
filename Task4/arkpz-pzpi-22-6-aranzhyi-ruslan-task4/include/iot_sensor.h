@@ -19,6 +19,7 @@ private:
     MeasurementSource* source;
     uint16_t measurements_count;
     Measurement* last_measurements;
+    uint16_t altitude;
 
     void sendData(Measurement measurement);
 };
