@@ -1,0 +1,36 @@
+version: '3'
+
+services:
+  mariadb:
+    image: mariadb:10.6
+    networks: ['idk']
+    volumes: ['mariadb_data:/var/lib/mysql']
+    environment:
+      - MARIADB_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MARIADB_DATABASE=ticketer
+      - MARIADB_USER=${MYSQL_USER}
+      - MARIADB_PASSWORD=${MYSQL_PASSWORD}
+    restart: unless-stopped
+  idk:
+    build: .
+    pull_policy: build
+    ports:
+      - '127.0.0.1:8000:8000'
+    networks: ['idk']
+    volumes: ['idk_data:/idk/data']
+    environment:
+      - DB_CONNECTION_STRING=mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mariadb/ticketer
+      - JWT_KEY=${JWT_KEY}
+    depends_on:
+      - mariadb
+    restart: unless-stopped
+
+networks:
+  idk:
+    driver: bridge
+
+volumes:
+  mariadb_data:
+    driver: local
+  idk_data:
+    driver: local
