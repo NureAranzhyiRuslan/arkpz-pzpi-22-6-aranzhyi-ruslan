@@ -34,9 +34,95 @@
 Адміністратори прогамної системи будуть мати доступ до міст, користувачів, їх IoT-сенсорів, погодних вимірів та існуючих прогнозів погоди. Адміністратори будуть мати можливість переглядати, додавати, редагувати та видаляти вищеперераховані дані.
 
 1.2.3 Створити програмну реалізацію бізнес логіки та функцій адміністрування серверної частини
-TODO: приклад коду бізнес логіки та функції адміністрування
+Код розрахунку прогнозу погоди наведений у додатку А.
+Приклад коду функції адміністрування (отримання сенсорів користувача):
+@router.get("/{user_id}/sensors", dependencies=[JwtAuthAdminDepN], response_model=PaginationResponse[SensorInfo])
+async def get_user_sensors(user_id: int, query: PaginationQuery = Query()):
+    if (user := await User.get_or_none(id=user_id)) is None:
+        raise CustomMessageException("Unknown user.", 404)
+    db_query = Sensor.filter(owner=user).order_by("id")
+    count = await db_query.count()
+    sensors = await db_query.limit(query.page_size).offset(query.page_size * (query.page - 1))
+    return {
+        "count": count,
+        "result": [
+            await sensor.to_json()
+            for sensor in sensors
+        ]
+}
 
 1.2.4 Перевірити роботу серверної частини системи
-TODO: uml діяльності та взаємодії серверної частини (???)
+
+Рисунок 1 - Діаграма діяльності серверної частини
+
+
+Рисунок 2 - Діаграма взаємодії серверної частини при додаванні сенсору
+
+
+Рисунок 3 - Діаграма взаємодії серверної частини при запиту прогнозу з конкретного сенсору
+
+
+Рисунок 4 - Діаграма взаємодії серверної частини при запиту прогнозу для міста
 
 Висновок: під час виконання лабораторної роботи було розроблено бізнес-логіку та функції адміністрування серверної частини програмної системи та прикладний програмний інтерфейс. Відео демонстрації доступно за посиланням: https://www.youtube.com/watch?v=... .
+
+
+
+
+
+
+
+
+Додаток А
+Код розрахунку прогнозу погоди
+
+def calculate_zambretti_method(
+        measurements: list[dict[str, str | float]], real_count: int | None = None, locale: Locale = Locale.EN
+) -> dict:
+    pressure_mts = [measurement["pressure"] for measurement in measurements]
+
+    # Pressure trend
+    count = len(pressure_mts)
+    sum_x = count / 2 * (count - 1)
+    sum_y = sum(pressure_mts)
+    sum_x_sq = count * (count + 1) * (2 * count + 1) / 6
+    sum_xy = sum(map(lambda item: item[0] * item[1], enumerate(pressure_mts)))
+    a = count * sum_xy - sum_x * sum_y
+    a /= count * sum_x_sq - sum_x * sum_x
+    pressure_delta = a * count
+
+    # Pressure at sea level
+    altitude = THERMAL_GRADIENT_PER_METER * AVERAGE_ALTITUDE
+    p0 = pressure_mts[-1] * ((1 - altitude / (measurements[-1]["temperature"] + altitude - ZERO_KELVIN)) ** (-5.257))
+
+    # Zambretti algorithm itself
+    if pressure_delta >= 1:
+        z = 179 - 20 * p0 / 129
+    elif pressure_delta <= -1:
+        z = 130 - 10 * p0 / 81
+    else:
+        z = 147 - 50 * p0 / 376
+
+    this_month = datetime.now().month
+    if this_month in WINTER_MONTHS and pressure_delta <= -1:
+        z -= 1
+    elif this_month in SUMMER_MONTHS and pressure_delta >= 1:
+        z += 1
+
+    z = int(z)
+    next_temp = measurements[-1]["temperature"] + measurements[-1]["temperature"] * a
+
+    return {
+        "info_text": zambretti_text[locale][z - 1],
+        "temperature": next_temp,
+        "details": {
+            "has_details": True,
+            "measurements_count": count,
+            "measurements_db_count": real_count or count,
+            "pressure_average": sum_y / count,
+            "pressure_delta": pressure_delta,
+            "a": a,
+            "p0": p0,
+            "z": z,
+        }
+    }
