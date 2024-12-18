@@ -159,4 +159,4 @@ const auto api_host = config["server"]["host"].value<std::string>();
         throw std::runtime_error("Failed to create measurements source!");
     }
 
-Висновок: під час виконання лабораторної роботи було розроблено програмне забезпечення для IoT або SmartDevice пристрою. Відео демонстрації доступно за посиланням: https://www.youtube.com/watch?v=... .
+Висновок: під час виконання лабораторної роботи було розроблено програмне забезпечення для IoT або SmartDevice пристрою. Відео демонстрації доступно за посиланням: https://www.youtube.com/watch?v=ePts5bn6f9s.
