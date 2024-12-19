@@ -1,5 +1,6 @@
 from time import time
 
+import bcrypt
 import pytest_asyncio
 from asgi_lifespan import LifespanManager
 from fastapi import FastAPI
@@ -12,6 +13,8 @@ config.DB_CONNECTION_STRING = "sqlite://:memory:"
 
 from idk.main import app
 from idk.models import User, UserRole, Session
+
+BCRYPT_HASH_123456789 = bcrypt.hashpw(b"123456789", bcrypt.gensalt(4)).decode("utf8")
 
 @pytest_asyncio.fixture
 async def app_with_lifespan() -> FastAPI:

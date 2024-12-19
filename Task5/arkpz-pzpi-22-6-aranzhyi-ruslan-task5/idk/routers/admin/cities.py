@@ -2,7 +2,7 @@ from fastapi import Query, APIRouter
 
 from idk.dependencies import JwtAuthAdminDepN
 from idk.models import City
-from idk.schemas.cities import CityInfoResponse, CityCreateRequest
+from idk.schemas.cities import CityInfoResponse, CityCreateRequest, CityEditRequest
 from idk.schemas.common import PaginationResponse, PaginationQuery
 from idk.utils.custom_exception import CustomMessageException
 
@@ -40,7 +40,7 @@ async def create_city(data: CityCreateRequest):
 
 
 @router.patch("/{city_id}", dependencies=[JwtAuthAdminDepN], response_model=CityInfoResponse)
-async def edit_city(city_id: int, data: CityCreateRequest):
+async def edit_city(city_id: int, data: CityEditRequest):
     if (city := await City.get_or_none(id=city_id)) is None:
         raise CustomMessageException("Unknown city.", 404)
 
