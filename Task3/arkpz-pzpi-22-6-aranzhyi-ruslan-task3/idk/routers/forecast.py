@@ -90,11 +90,16 @@ async def get_sensor_forecast_zambretti(sensor: SensorDep):
 
 @router.get("/city", response_model=ForecastResponse)
 async def get_city_forecast(city: int | str):
+    try:
+        city = int(city)
+    except ValueError:
+        pass
+
     if (city := await City.get_or_none(**{"name" if isinstance(city, str) else "id": city})) is None:
         raise CustomMessageException("Unknown city.", 404)
 
     forecast_query = {
-        "time__lt": datetime.now(UTC) - timedelta(hours=1),
+        "timestamp__lt": datetime.now(UTC) - timedelta(hours=1),
         "city": city,
     }
     if forecast := await Forecast.filter(**forecast_query).order_by("-timestamp").first():
@@ -102,20 +107,20 @@ async def get_city_forecast(city: int | str):
 
     query = {
         "time__gt": datetime.now(UTC) - timedelta(days=1),
-        "city": city,
+        "sensor__city": city,
     }
-    measurements_all = await Measurement.filter(*query).order_by("time")
+    measurements_all = await Measurement.filter(**query).order_by("time")
     measurements: list[dict] = []
-    for measurement in measurements_all:
+    for idx, measurement in enumerate(measurements_all):
         time_section = int(measurement.time.timestamp()) % (60 * 30)
         if not measurements or measurements[-1]["time"] != time_section:
             if measurements:
                 pressure_items = measurements[-1]["pressure_items"]
                 temp_items = measurements[-1]["temperature_items"]
-                measurements[-1]["pressure"] = len(sum(*pressure_items) / len(pressure_items))
-                measurements[-1]["temperature"] = len(sum(*temp_items) / len(temp_items))
+                measurements[-1]["pressure"] = sum([0, *pressure_items]) / len(pressure_items)
+                measurements[-1]["temperature"] = sum([0, *temp_items]) / len(temp_items)
                 del measurements[-1]["pressure_items"]
-                del measurements[-1]["temp_items"]
+                del measurements[-1]["temperature_items"]
 
             measurements.append({
                 "time": time_section,
@@ -128,6 +133,14 @@ async def get_city_forecast(city: int | str):
 
     if not measurements:
         raise CustomMessageException("No measurements found for last day", 400)
+
+    if "pressure_items" in measurements[-1]:
+        pressure_items = measurements[-1]["pressure_items"]
+        temp_items = measurements[-1]["temperature_items"]
+        measurements[-1]["pressure"] = sum([0, *pressure_items]) / len(pressure_items)
+        measurements[-1]["temperature"] = sum([0, *temp_items]) / len(temp_items)
+        del measurements[-1]["pressure_items"]
+        del measurements[-1]["temperature_items"]
 
     result = calculate_zambretti_method(measurements, len(measurements_all))
     await Forecast.create(
